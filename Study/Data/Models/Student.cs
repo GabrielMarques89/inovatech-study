@@ -7,5 +7,6 @@ namespace Study.Data.Models
 {
     public class Student
     {
+        public virtual string suaMae {get;set}
     }
 }
