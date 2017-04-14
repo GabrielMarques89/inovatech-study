@@ -187,6 +187,7 @@
     <Compile Include="Data\Maps\BaseClassMap.cs" />
     <Compile Include="Data\Maps\UserMap.cs" />
     <Compile Include="Data\Models\BaseEntity.cs" />
+    <Compile Include="Data\Models\Student.cs" />
     <Compile Include="Data\Models\User.cs" />
     <Compile Include="Data\NHibernateSession.cs" />
     <Compile Include="Data\NHibernateSessionFactory.cs" />
