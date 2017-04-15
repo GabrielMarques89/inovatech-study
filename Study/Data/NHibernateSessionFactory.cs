@@ -8,7 +8,7 @@ using FluentNHibernate.Cfg.Db;
 using NHibernate;
 using NHibernate.Tool.hbm2ddl;
 using Study.Data.Conventions;
-using Study.Data.Models;
+using Study.Models;
 
 namespace Study.Data
 {
@@ -60,7 +60,7 @@ namespace Study.Data
                 .Conventions.AddFromAssemblyOf<PrimaryKeyConvention>()
                 .Conventions.AddFromAssemblyOf<NameConvention>());
 
-            fluentConfiguration.ExposeConfiguration(cfg => new SchemaExport(cfg).Create(true, true));
+            //fluentConfiguration.ExposeConfiguration(cfg => new SchemaExport(cfg).Create(true, true));
 
             ISessionFactory factory = fluentConfiguration.BuildSessionFactory();
             sessionFactorys.Add(ConnectionString, factory);

@@ -2,59 +2,59 @@
 using System.Linq;
 using NHibernate;
 using NHibernate.Linq;
-using Study.Data.Models;
+using Study.Models;
 
 namespace Study.Data
 {
     public class Repository<T> : IRepository<T> where T : BaseEntity
     {
-        protected readonly ISession session;
+        protected readonly ISession Session;
 
-        protected IQueryable<T> set { get { return session.Query<T>(); } }
+        protected IQueryable<T> Set { get { return Session.Query<T>(); } }
 
         public Repository(ISession session)
         {
-            this.session = session;
+            this.Session = session;
         }
 
         public virtual IQueryable<T> Queryable()
         {
-            return set;
+            return Set;
         }
 
         public virtual T FindById(long id)
         {
-            return session.Get<T>(id);
+            return Session.Get<T>(id);
         }
 
         public virtual void Save(T entidade)
         {
-            session.SaveOrUpdate(entidade);
+            Session.SaveOrUpdate(entidade);
         }
 
         public virtual void Merge(T entidade)
         {
-            session.Merge(entidade);
+            Session.Merge(entidade);
         }
 
         public virtual void Delete(long id)
         {
-            session.Delete(FindById(id));
+            Session.Delete(FindById(id));
         }
 
         public virtual void Delete(T entidade)
         {
-            session.Delete(entidade);
+            Session.Delete(entidade);
         }
 
         public virtual void Flush()
         {
-            session.Flush();
+            Session.Flush();
         }
 
         public virtual void Clear()
         {
-            session.Clear();
+            Session.Clear();
         }
 
     }

@@ -102,6 +102,7 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Web.Entity" />
@@ -184,11 +185,21 @@
     <Compile Include="Controllers\ValuesController.cs" />
     <Compile Include="Data\Conventions\PrimaryKeyConvention.cs" />
     <Compile Include="Data\Conventions\NameConvention.cs" />
+    <Compile Include="Models\Curso.cs" />
+    <Compile Include="Models\Disciplina.cs" />
+    <Compile Include="Models\Enums\TipoParticipacao.cs" />
+    <Compile Include="Models\GrupoEstudo.cs" />
+    <Compile Include="Models\Instituicao.cs" />
     <Compile Include="Models\Maps\BaseClassMap.cs" />
-    <Compile Include="Models\Maps\UserMap.cs" />
+    <Compile Include="Models\Maps\CursoMap.cs" />
+    <Compile Include="Models\Maps\DisciplinaMap.cs" />
+    <Compile Include="Models\Maps\GrupoEstudoMap.cs" />
+    <Compile Include="Models\Maps\InstituicaoMap.cs" />
+    <Compile Include="Models\Maps\AlunoMap.cs" />
     <Compile Include="Models\BaseEntity.cs" />
-    <Compile Include="Models\Student.cs" />
-    <Compile Include="Models\User.cs" />
+    <Compile Include="Models\Maps\ParticipacaoMap.cs" />
+    <Compile Include="Models\Participacao.cs" />
+    <Compile Include="Models\Aluno.cs" />
     <Compile Include="Data\NHibernateSession.cs" />
     <Compile Include="Data\NHibernateSessionFactory.cs" />
     <Compile Include="Data\Repository.cs" />
