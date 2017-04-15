@@ -184,11 +184,11 @@
     <Compile Include="Controllers\ValuesController.cs" />
     <Compile Include="Data\Conventions\PrimaryKeyConvention.cs" />
     <Compile Include="Data\Conventions\NameConvention.cs" />
-    <Compile Include="Data\Maps\BaseClassMap.cs" />
-    <Compile Include="Data\Maps\UserMap.cs" />
-    <Compile Include="Data\Models\BaseEntity.cs" />
-    <Compile Include="Data\Models\Student.cs" />
-    <Compile Include="Data\Models\User.cs" />
+    <Compile Include="Models\Maps\BaseClassMap.cs" />
+    <Compile Include="Models\Maps\UserMap.cs" />
+    <Compile Include="Models\BaseEntity.cs" />
+    <Compile Include="Models\Student.cs" />
+    <Compile Include="Models\User.cs" />
     <Compile Include="Data\NHibernateSession.cs" />
     <Compile Include="Data\NHibernateSessionFactory.cs" />
     <Compile Include="Data\Repository.cs" />
