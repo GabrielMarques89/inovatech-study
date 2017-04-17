@@ -11,5 +11,6 @@ namespace Study.Models
         public virtual int QuantidadeMaxAlunos { get; set; }
         public virtual bool Privado { get; set; }
         public virtual Disciplina Disciplina { get; set; }
+        public virtual DateTime DataHoraInicio { get; set; }
     }
 }
