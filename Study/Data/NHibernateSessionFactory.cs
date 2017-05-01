@@ -8,49 +8,48 @@ using FluentNHibernate.Cfg.Db;
 using NHibernate;
 using NHibernate.Tool.hbm2ddl;
 using Study.Data.Conventions;
-using Study.Models;
 
 namespace Study.Data
 {
     public class NHibernateSessionFactory
     {
-        private static IDictionary<string, ISessionFactory> sessionFactorys = new Dictionary<string, ISessionFactory>();
+        private static readonly IDictionary<string, ISessionFactory> SessionFactorys = new Dictionary<string, ISessionFactory>();
 
-        public static IStatelessSession OpenStatelessSession(string ConnectionString, IInterceptor localSessionInterceptor, params Assembly[] Assemblies)
+        public static IStatelessSession OpenStatelessSession(string connectionString, IInterceptor localSessionInterceptor, params Assembly[] Assemblies)
         {
-            return CurrentSessionFactory(ConnectionString, Assemblies).OpenStatelessSession();
+            return CurrentSessionFactory(connectionString, Assemblies).OpenStatelessSession();
         }
 
-        public static ISession OpenSession(string ConnectionString, IInterceptor localSessionInterceptor, params Assembly[] Assemblies)
+        public static ISession OpenSession(string connectionString, IInterceptor localSessionInterceptor, params Assembly[] Assemblies)
         {
             if (localSessionInterceptor != null)
             {
-                return CurrentSessionFactory(ConnectionString, Assemblies).OpenSession(localSessionInterceptor);
+                return CurrentSessionFactory(connectionString, Assemblies).OpenSession(localSessionInterceptor);
             }
-            ISession session = CurrentSessionFactory(ConnectionString, Assemblies).OpenSession();
+            ISession session = CurrentSessionFactory(connectionString, Assemblies).OpenSession();
             return session;
         }
 
         [MethodImpl(MethodImplOptions.Synchronized)]
-        private static ISessionFactory CurrentSessionFactory(string ConnectionString, params Assembly[] Assemblies)
+        private static ISessionFactory CurrentSessionFactory(string connectionString, params Assembly[] assemblies)
         {
             ISessionFactory factory;
-            if (!sessionFactorys.TryGetValue(ConnectionString, out factory))
+            if (!SessionFactorys.TryGetValue(connectionString, out factory))
             {
-                factory = CreateSessionFactory(ConnectionString, Assemblies);
+                factory = CreateSessionFactory(connectionString, assemblies);
             }
             return factory;
         }
 
         [MethodImpl(MethodImplOptions.Synchronized)]
-        private static ISessionFactory CreateSessionFactory(string ConnectionString, params Assembly[] Assemblies)
+        private static ISessionFactory CreateSessionFactory(string connectionString, params Assembly[] assemblies)
         {
             FluentConfiguration fluentConfiguration = Fluently.Configure()
 
                 .Database(MySQLConfiguration.Standard
-                    .ConnectionString(c => c.FromConnectionStringWithKey(ConnectionString))
+                    .ConnectionString(c => c.FromConnectionStringWithKey(connectionString))
                     .Driver<NHibernate.Driver.MySqlDataDriver>());
-            foreach (Assembly assembly in Assemblies)
+            foreach (Assembly assembly in assemblies)
             {
                 fluentConfiguration.Mappings(m => m.FluentMappings.AddFromAssembly(assembly));
             }
@@ -63,13 +62,13 @@ namespace Study.Data
             //fluentConfiguration.ExposeConfiguration(cfg => new SchemaExport(cfg).Create(true, true));
 
             ISessionFactory factory = fluentConfiguration.BuildSessionFactory();
-            sessionFactorys.Add(ConnectionString, factory);
+            SessionFactorys.Add(connectionString, factory);
             return factory;
         }
 
         public static void CloseAllSessionFactory()
         {
-            foreach (ISessionFactory factory in sessionFactorys.Values)
+            foreach (ISessionFactory factory in SessionFactorys.Values)
             {
                 if (factory.IsClosed == false)
                 {
