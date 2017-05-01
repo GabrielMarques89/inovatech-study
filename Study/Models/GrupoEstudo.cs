@@ -12,7 +12,6 @@ namespace Study.Models
         public virtual DateTime DataInicio { get; set; }
         public virtual string Local { get; set; }
         public virtual string Descricao { get; set; }
-        public virtual bool Privado { get; set; }
         public virtual Disciplina Disciplina { get; set; }
     }
 }
