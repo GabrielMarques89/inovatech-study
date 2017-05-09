@@ -6,6 +6,7 @@ using System.Web;
 using NHibernate;
 using Study.Data;
 using Study.Models;
+using Study.Models.Views;
 
 namespace Study.Controllers
 {
@@ -15,18 +16,24 @@ namespace Study.Controllers
         public string Get()
         {
             var session = CurrentSession();
-            var repositorio = new Repository<Instituicao>(session);
+            var repositorio = new Repository<ViewAluno>(session);
 
-            var instituicoes = repositorio.Queryable().ToList();
-            string teste = "";
-            foreach (var item in instituicoes)
+            var alunos = repositorio.Queryable().ToList();
+            StringBuilder teste = new StringBuilder();
+            foreach (var item in alunos)
             {
-                teste = teste + item.Nome;
-                teste = teste + "   -   ";
+                teste.Append(item.Nome);
+                teste.Append(" - ");
+                teste.Append(item.Email);
+                teste.Append(" - ");
+                teste.Append(item.NomeCurso);
+                teste.Append(" - ");
+                teste.Append(item.Indicacoes);
+                teste.Append(" - ");
+                teste.Append(item.ContraIndicacoes);
             }
-
-
-            return teste;
+            
+            return teste.ToString();
         }
 
     }

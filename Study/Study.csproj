@@ -200,6 +200,8 @@
     <Compile Include="Models\Maps\AlunoMap.cs" />
     <Compile Include="Models\BaseEntity.cs" />
     <Compile Include="Models\Maps\ParticipacaoMap.cs" />
+    <Compile Include="Models\Maps\ViewAlunosGrupoMap.cs" />
+    <Compile Include="Models\Maps\ViewAlunoMap.cs" />
     <Compile Include="Models\Participacao.cs" />
     <Compile Include="Models\Aluno.cs" />
     <Compile Include="Data\NHibernateSession.cs" />
@@ -208,6 +210,8 @@
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
+    <Compile Include="Models\Views\ViewAlunosGrupo.cs" />
+    <Compile Include="Models\Views\ViewAluno.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
