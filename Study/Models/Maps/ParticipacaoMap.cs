@@ -13,7 +13,7 @@ namespace Study.Models.Maps
         {
             Table("PARTICIPACOES");
 
-            Id(reg => reg.Id).Column("ID_PARTICIPACAO");
+            Id(reg => reg.Id).Column("ID_PARTICIPACAO").GeneratedBy.Identity().Not.Nullable();
 
             Map(reg => reg.Tipo).Column("TIPO").CustomType<EnumType<TipoParticipacao>>().Not.Nullable();
 

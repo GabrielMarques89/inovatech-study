@@ -11,7 +11,7 @@ namespace Study.Models.Maps
         {
             Table("AVALIACOES");
 
-            Id(reg => reg.Id).Column("ID_AVALIACAO");
+            Id(reg => reg.Id).Column("ID_AVALIACAO").GeneratedBy.Identity().Not.Nullable();
 
             Map(reg => reg.Texto).Column("TEXTO").Length(256).Not.Nullable();
             Map(reg => reg.AvaliacaoPositiva).Column("AVALIACAO_POSITIVA").Not.Nullable();

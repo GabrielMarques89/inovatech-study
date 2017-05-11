@@ -11,7 +11,7 @@ namespace Study.Models.Maps
         {
             Table("GRUPOS_ESTUDO");
 
-            Id(reg => reg.Id).Column("ID_GRUPO_ESTUDO");
+            Id(reg => reg.Id).Column("ID_GRUPO_ESTUDO").GeneratedBy.Identity().Not.Nullable();
 
             Map(reg => reg.Nome).Column("NOME").Length(128).Not.Nullable();
             Map(reg => reg.QuantidadeMaxAlunos).Column("QUANTIDADE_MAX_ALUNOS").Not.Nullable();

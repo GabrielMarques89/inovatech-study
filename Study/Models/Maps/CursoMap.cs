@@ -11,7 +11,7 @@ namespace Study.Models.Maps
         {
             Table("CURSOS");
 
-            Id(reg => reg.Id).Column("ID_CURSO");
+            Id(reg => reg.Id).Column("ID_CURSO").GeneratedBy.Identity().Not.Nullable();
             Map(reg => reg.Nome).Column("NOME").Length(128).Not.Nullable();
             Map(reg => reg.QuantidadePeriodos).Column("QUANTIDADE_PERIODOS").Not.Nullable();
 

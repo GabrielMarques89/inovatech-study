@@ -11,7 +11,7 @@ namespace Study.Models.Maps
         {
             Table("DISCIPLINAS");
 
-            Id(reg => reg.Id).Column("ID_DISCIPLINA");
+            Id(reg => reg.Id).Column("ID_DISCIPLINA").GeneratedBy.Identity().Not.Nullable(); 
 
             Map(reg => reg.Nome).Column("NOME").Length(128).Not.Nullable();
             Map(reg => reg.Professor).Column("PROFESSOR").Length(128).Not.Nullable();

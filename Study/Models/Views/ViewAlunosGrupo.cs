@@ -17,6 +17,8 @@ namespace Study.Models.Views
         public virtual int Periodo { get; set; }
         public virtual long IdCurso { get; set; }
         public virtual string NomeCurso { get; set; }
+        public virtual long IdGrupo { get; set; }
+        public virtual string NomeGrupo { get; set; }
         public virtual TipoParticipacao Tipo { get; set; }
 
     }

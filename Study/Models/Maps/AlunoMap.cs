@@ -8,7 +8,7 @@ namespace Study.Models.Maps
         {
             Table("ALUNOS");
 
-            Id(reg => reg.Id).Column("ID_ALUNO");
+            Id(reg => reg.Id).Column("ID_ALUNO").GeneratedBy.Identity().Not.Nullable();
 
             Map(reg => reg.Matricula).Column("MATRICULA").Length(128).Not.Nullable();
             Map(reg => reg.Senha).Column("SENHA").Length(128).Not.Nullable();
