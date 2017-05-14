@@ -8,6 +8,7 @@ using FluentNHibernate.Conventions;
 using Study.Data;
 using Study.Models;
 using Study.Models.Views;
+using System;
 
 namespace Study.Controllers
 {
@@ -17,7 +18,55 @@ namespace Study.Controllers
         private Repository<Aluno> _repositorioAluno;
         private Repository<ViewAluno> _repositorioViewAluno;
 
+        [HttpPost]
+        [Route("login")]
+        public HttpResponseMessage LogarAluno([FromBody]Aluno aluno)
+        {
+            _repositorioAluno = new Repository<Aluno>(CurrentSession());
+            if (aluno == null)
+            {
+                AddError("Informe os dados para autenticar.");
+                return SendErrorResponse(HttpStatusCode.BadRequest);
+            }
+            ValidarCamposObrigatoriosLogin(aluno.Matricula, aluno.Senha);
+
+            if (Errors != null && HasError())
+            {
+                return SendErrorResponse(HttpStatusCode.BadRequest);
+            }
+
+            var alunoEncontrado = _repositorioAluno.Queryable()
+                .Where(x => x.Matricula.Equals(aluno.Matricula) && x.Senha.Equals(aluno.Senha))
+                .SingleOrDefault();
+
+            if (alunoEncontrado == null)
+            {
+                AddError("A [Matrícula] e/ou a [Senha] informados são inválidos.");
+            }
+
+            if (Errors != null && HasError())
+            {
+                return SendErrorResponse(HttpStatusCode.BadRequest);
+            }
+
+            return MultipleResponse(HttpStatusCode.OK, alunoEncontrado);
+        }
+
         [HttpGet]
+        [Route("auth")]
+        public HttpResponseMessage Autenticar()
+        {
+            var encontrado = _repositorioAluno.Queryable().FirstOrDefault(x => x.Token.Equals(Request.Headers.Authorization)) != null;
+            if (!encontrado)
+            {
+                AddError("O aluno não está mais autenticado");
+                return SendErrorResponse(HttpStatusCode.Unauthorized);
+            }
+            return MultipleResponse(HttpStatusCode.OK, null);
+        }
+
+        [HttpGet]
+        [Route("detalhar")]
         public HttpResponseMessage GetAluno([FromUri]long? idAluno)
         {
             _repositorioViewAluno = new Repository<ViewAluno>(CurrentSession());
@@ -25,7 +74,21 @@ namespace Study.Controllers
             if (idAluno.HasValue)
             {
                 result = _repositorioViewAluno.Queryable().FirstOrDefault(x => x.Id == idAluno.Value);
+            }else if(Request.Headers.Authorization != null)
+            {
+                result = _repositorioViewAluno.Queryable()
+                    .FirstOrDefault(x => x.Token.Equals(Request.Headers.Authorization));
             }
+
+            if (result != null)
+            {
+                result.Token = "";
+                if(result.Foto != null && result.Foto.Length > 0)
+                {
+                    result.FotoB64 = "data:image/jpeg;base64," + Convert.ToBase64String(result.Foto);
+                }
+            }
+
             return MultipleResponse(HttpStatusCode.OK, result);
         }
 
@@ -36,7 +99,10 @@ namespace Study.Controllers
             _repositorioAluno = new Repository<Aluno>(CurrentSession());
 
             ValidarCamposObrigatorios(aluno);
-            VerificaUnicidade(aluno);
+            if(Errors == null || !HasError())
+            {
+                VerificaUnicidade(aluno);
+            }
 
             if (Errors != null && HasError())
             {
@@ -47,10 +113,23 @@ namespace Study.Controllers
                 aluno.Token = GeraToken(aluno);
             }
             
-            _repositorioAluno.Save(aluno);
-            _repositorioAluno.Flush();
+            if(aluno.FotoB64 != null && aluno.FotoB64.Length > 0)
+            {
+                var foto = aluno.FotoB64.Substring(aluno.FotoB64.IndexOf(",")+1);
+                aluno.Foto = Convert.FromBase64String(foto);
+            }
 
-            return MultipleResponse(HttpStatusCode.OK, aluno);
+            try
+            {
+                _repositorioAluno.Save(aluno);
+                _repositorioAluno.Flush();
+
+                return MultipleResponse(HttpStatusCode.OK, aluno);
+            }catch(Exception e)
+            {
+                AddError("Não foi possível salvar.");
+                return SendErrorResponse(HttpStatusCode.BadRequest);
+            }
         }
 
         private void ValidarCamposObrigatorios(Aluno aluno)
@@ -70,10 +149,6 @@ namespace Study.Controllers
             if (string.IsNullOrEmpty(aluno.Email))
             {
                 AddError("O campo [Email] é obrigatório.");
-            }
-            if (aluno.Periodo <= 0)
-            {
-                AddError("O campo [Período] é obrigatório.");
             }
         }
 
@@ -102,6 +177,18 @@ namespace Study.Controllers
             }
 
             return sb.ToString();
+        }
+
+        private void ValidarCamposObrigatoriosLogin(string matricula, string senha)
+        {
+            if (string.IsNullOrEmpty(matricula))
+            {
+                AddError("O campo [Matrícula] é obrigatório.");
+            }
+            if (string.IsNullOrEmpty(senha))
+            {
+                AddError("O campo [Senha] é obrigatório.");
+            }
         }
     }
 }

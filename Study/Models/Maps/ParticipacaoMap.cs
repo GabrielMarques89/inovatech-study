@@ -16,6 +16,7 @@ namespace Study.Models.Maps
             Id(reg => reg.Id).Column("ID_PARTICIPACAO").GeneratedBy.Identity().Not.Nullable();
 
             Map(reg => reg.Tipo).Column("TIPO").CustomType<EnumType<TipoParticipacao>>().Not.Nullable();
+            Map(reg => reg.Participando).Column("PARTICIPANDO").Nullable();
 
             References(reg => reg.Aluno).ForeignKey("FK_ALUNO_X_PARTICIPACAO").Column("ID_ALUNO").Not.Nullable();
             References(reg => reg.Grupo).ForeignKey("FK_GRUPO_X_PARTICIPACAO").Column("ID_GRUPO_ESTUDO").Not.Nullable();

@@ -1,47 +1,13 @@
-create table STUDY_DB.ALUNOS
+use study_db;
+create table STUDY_DB.INSTITUICOES
 (
-    ID_ALUNO bigint not null
+    ID_INSTITUICAO bigint not null
         primary key,
     VERSION bigint null,
-    MATRICULA varchar(128) not null,
-    SENHA varchar(128) not null,
     NOME varchar(128) not null,
-    EMAIL varchar(128) not null,
-    TELEFONE varchar(14) null,
-    FOTO_URL text null,
-    FOTO_THUMB_URL text null,
-    PERIODO int not null,
-    TOKEN text null,
-    ID_CURSO bigint not null,
-    constraint FK_CURSO_X_ALUNO
-        foreign key (ID_CURSO) references study_db.CURSOS (ID_CURSO)
+    ENDERECO text null,
+    TELEFONE varchar(14) null
 );
-
-create index ID_CURSO on ALUNOS (ID_CURSO);
-
-create table STUDY_DB.AVALIACOES
-(
-    ID_AVALIACAO bigint not null
-        primary key,
-    VERSION bigint null,
-    TEXTO text not null,
-    AVALIACAO_POSITIVA tinyint(1) not null,
-    ID_AVALIADOR bigint not null,
-    ID_AVALIADO bigint not null,
-    ID_GRUPO_ESTUDO bigint not null,
-    constraint FK_ALUNO_X_AVALIACAO_01
-        foreign key (ID_AVALIADOR) references study_db.ALUNOS (ID_ALUNO),
-    constraint FK_ALUNO_X_AVALIACAO_02
-        foreign key (ID_AVALIADO) references study_db.ALUNOS (ID_ALUNO),
-    constraint FK_GRUPO_X_AVALIACAO_01
-        foreign key (ID_GRUPO_ESTUDO) references study_db.GRUPOS_ESTUDO (ID_GRUPO_ESTUDO)
-);
-
-create index ID_AVALIADO on AVALIACOES (ID_AVALIADO);
-
-create index ID_AVALIADOR on AVALIACOES (ID_AVALIADOR);
-
-create index ID_GRUPO_ESTUDO on AVALIACOES (ID_GRUPO_ESTUDO);
 
 create table STUDY_DB.CURSOS
 (
@@ -71,6 +37,21 @@ create table STUDY_DB.DISCIPLINAS
 
 create index ID_CURSO on DISCIPLINAS (ID_CURSO);
 
+create table STUDY_DB.ALUNOS
+(
+    ID_ALUNO bigint not null
+        primary key,
+    VERSION bigint null,
+    MATRICULA varchar(128) not null,
+    SENHA varchar(128) not null,
+    NOME varchar(128) not null,
+    EMAIL varchar(128) not null,
+    TELEFONE varchar(14) null,
+    FOTO text null,
+    TOKEN text null,
+    ID_CURSO bigint not null
+);
+
 create table STUDY_DB.GRUPOS_ESTUDO
 (
     ID_GRUPO_ESTUDO bigint not null
@@ -85,16 +66,6 @@ create table STUDY_DB.GRUPOS_ESTUDO
 );
 
 create index ID_DISCIPLINA on GRUPOS_ESTUDO (ID_DISCIPLINA);
-
-create table STUDY_DB.INSTITUICOES
-(
-    ID_INSTITUICAO bigint not null
-        primary key,
-    VERSION bigint null,
-    NOME varchar(128) not null,
-    ENDERECO text null,
-    TELEFONE varchar(14) null
-);
 
 create table STUDY_DB.PARTICIPACOES
 (
@@ -113,3 +84,27 @@ create table STUDY_DB.PARTICIPACOES
 create index ID_ALUNO on PARTICIPACOES (ID_ALUNO);
 
 create index ID_GRUPO_ESTUDO on PARTICIPACOES (ID_GRUPO_ESTUDO);
+
+create table STUDY_DB.AVALIACOES
+(
+    ID_AVALIACAO bigint not null
+        primary key,
+    VERSION bigint null,
+    TEXTO text not null,
+    AVALIACAO_POSITIVA tinyint(1) not null,
+    ID_AVALIADOR bigint not null,
+    ID_AVALIADO bigint not null,
+    ID_GRUPO_ESTUDO bigint not null,
+    constraint FK_ALUNO_X_AVALIACAO_01
+        foreign key (ID_AVALIADOR) references study_db.ALUNOS (ID_ALUNO),
+    constraint FK_ALUNO_X_AVALIACAO_02
+        foreign key (ID_AVALIADO) references study_db.ALUNOS (ID_ALUNO),
+    constraint FK_GRUPO_X_AVALIACAO_01
+        foreign key (ID_GRUPO_ESTUDO) references study_db.GRUPOS_ESTUDO (ID_GRUPO_ESTUDO)
+);
+
+create index ID_AVALIADO on AVALIACOES (ID_AVALIADO);
+
+create index ID_AVALIADOR on AVALIACOES (ID_AVALIADOR);
+
+create index ID_GRUPO_ESTUDO on AVALIACOES (ID_GRUPO_ESTUDO);
