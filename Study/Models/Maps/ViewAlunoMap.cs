@@ -18,11 +18,7 @@ namespace Study.Models.Maps
             Map(reg => reg.Nome).Column("NOME");
             Map(reg => reg.Email).Column("EMAIL");
             Map(reg => reg.Telefone).Column("TELEFONE");
-            Map(reg => reg.FotoUrl).Column("FOTO_URL");
-            Map(reg => reg.FotoThumbUrl).Column("FOTO_THUMB_URL");
-            Map(reg => reg.Periodo).Column("PERIODO");
-            Map(reg => reg.IdCurso).Column("ID_CURSO");
-            Map(reg => reg.NomeCurso).Column("NOME_CURSO");
+            Map(reg => reg.Foto).Column("FOTO");
             Map(reg => reg.Indicacoes).Column("INDICACOES");
             Map(reg => reg.ContraIndicacoes).Column("CONTRA_INDICACOES");
 

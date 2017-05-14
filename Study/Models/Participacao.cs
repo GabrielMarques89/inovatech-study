@@ -11,5 +11,6 @@ namespace Study.Models
         public virtual TipoParticipacao Tipo { get; set; }
         public virtual Aluno Aluno { get; set; }
         public virtual GrupoEstudo Grupo { get; set; }
+        public virtual Boolean? Participando { get; set; }
     }
 }
