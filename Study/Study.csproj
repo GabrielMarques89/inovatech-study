@@ -188,7 +188,9 @@
     <Compile Include="App_Start\WebApiConfig.cs" />
     <Compile Include="Controllers\AlunoController.cs" />
     <Compile Include="Controllers\BaseApiController.cs" />
+    <Compile Include="Controllers\DisciplinaController.cs" />
     <Compile Include="Controllers\GrupoEstudoController.cs" />
+    <Compile Include="Controllers\ParticipacaoController.cs" />
     <Compile Include="Data\Conventions\PrimaryKeyConvention.cs" />
     <Compile Include="Data\Conventions\NameConvention.cs" />
     <Compile Include="Models\Avaliacao.cs" />
@@ -209,6 +211,7 @@
     <Compile Include="Models\Maps\ParticipacaoMap.cs" />
     <Compile Include="Models\Maps\ViewAlunosGrupoMap.cs" />
     <Compile Include="Models\Maps\ViewAlunoMap.cs" />
+    <Compile Include="Models\Maps\ViewGruposAlunoMap.cs" />
     <Compile Include="Models\Participacao.cs" />
     <Compile Include="Models\Aluno.cs" />
     <Compile Include="Data\NHibernateSession.cs" />
@@ -219,6 +222,7 @@
     </Compile>
     <Compile Include="Models\Views\ViewAlunosGrupo.cs" />
     <Compile Include="Models\Views\ViewAluno.cs" />
+    <Compile Include="Models\Views\ViewGruposAluno.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -231,6 +235,7 @@
     <Content Include="Scripts\2 - VIEW_ALUNO.sql" />
     <Content Include="Scripts\3 - VIEW_ALUNOS_GRUPO.sql" />
     <Content Include="Scripts\4 - CARGA.sql" />
+    <Content Include="Scripts\5 - VIEW_GRUPOS_ALUNO.sql" />
     <Content Include="Web.config" />
     <Content Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>

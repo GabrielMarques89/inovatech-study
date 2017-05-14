@@ -21,6 +21,7 @@ namespace Study.Models.Maps
             Map(reg => reg.Privado).Column("PRIVADO").Not.Nullable();
 
             References(reg => reg.Disciplina).ForeignKey("FK_DISCIPLINA_X_GRUPO_ESTUDO").Column("ID_DISCIPLINA").Not.Nullable();
+            References(reg => reg.Lider).ForeignKey("FK_LIDER_X_GRUPO_ESTUDO").Column("ID_LIDER").Not.Nullable();
         }
     }
 }

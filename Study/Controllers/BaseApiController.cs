@@ -19,6 +19,7 @@ namespace Study.Controllers
         private ISession _session;
         private List<string> _errorMessages;
         private List<string> _successMessages;
+        private Repository<Aluno> _repositorioAluno;
 
         protected ISession CurrentSession()
         {
@@ -100,6 +101,22 @@ namespace Study.Controllers
         }
 
         #endregion
+
+
+        public void VerificaToken()
+        {
+            _repositorioAluno = new Repository<Aluno>(CurrentSession());
+            Aluno alunoLogado = null;
+            if (Request.Headers.Authorization != null)
+            {
+                alunoLogado = _repositorioAluno.Queryable()
+                    .FirstOrDefault(x => x.Token == Request.Headers.Authorization.ToString());
+            }
+            if (alunoLogado == null || alunoLogado.Id <= 0)
+            {
+                AddError("Aluno não autenticado");
+            }
+        }
 
     }
 }

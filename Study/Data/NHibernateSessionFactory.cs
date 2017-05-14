@@ -6,6 +6,7 @@ using System.Runtime.CompilerServices;
 using FluentNHibernate.Cfg;
 using FluentNHibernate.Cfg.Db;
 using NHibernate;
+using NHibernate.Dialect;
 using NHibernate.Tool.hbm2ddl;
 using Study.Data.Conventions;
 

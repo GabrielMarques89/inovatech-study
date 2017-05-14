@@ -4,11 +4,12 @@ using System.Net.Http;
 using System.Security.Cryptography;
 using System.Text;
 using System.Web.Http;
-using FluentNHibernate.Conventions;
 using Study.Data;
 using Study.Models;
 using Study.Models.Views;
 using System;
+using System.Net.Mail;
+using System.Web.Helpers;
 
 namespace Study.Controllers
 {
@@ -17,10 +18,11 @@ namespace Study.Controllers
     {
         private Repository<Aluno> _repositorioAluno;
         private Repository<ViewAluno> _repositorioViewAluno;
+        private Repository<ViewGruposAluno> _repositorioViewGrupos;
 
         [HttpPost]
         [Route("login")]
-        public HttpResponseMessage LogarAluno([FromBody]Aluno aluno)
+        public HttpResponseMessage LogarAluno([FromBody] Aluno aluno)
         {
             _repositorioAluno = new Repository<Aluno>(CurrentSession());
             if (aluno == null)
@@ -34,10 +36,9 @@ namespace Study.Controllers
             {
                 return SendErrorResponse(HttpStatusCode.BadRequest);
             }
-
+            var senha = Crypto.SHA1(aluno.Senha);
             var alunoEncontrado = _repositorioAluno.Queryable()
-                .Where(x => x.Matricula.Equals(aluno.Matricula) && x.Senha.Equals(aluno.Senha))
-                .SingleOrDefault();
+                .SingleOrDefault(x => x.Matricula.Equals(aluno.Matricula) && x.Senha.Equals(senha));
 
             if (alunoEncontrado == null)
             {
@@ -56,7 +57,8 @@ namespace Study.Controllers
         [Route("auth")]
         public HttpResponseMessage Autenticar()
         {
-            var encontrado = _repositorioAluno.Queryable().FirstOrDefault(x => x.Token.Equals(Request.Headers.Authorization)) != null;
+            var encontrado =
+                _repositorioAluno.Queryable().FirstOrDefault(x => x.Token.Equals(Request.Headers.Authorization)) != null;
             if (!encontrado)
             {
                 AddError("O aluno não está mais autenticado");
@@ -67,23 +69,24 @@ namespace Study.Controllers
 
         [HttpGet]
         [Route("detalhar")]
-        public HttpResponseMessage GetAluno([FromUri]long? idAluno)
+        public HttpResponseMessage GetAluno([FromUri] long? idAluno)
         {
             _repositorioViewAluno = new Repository<ViewAluno>(CurrentSession());
             ViewAluno result = null;
             if (idAluno.HasValue)
             {
                 result = _repositorioViewAluno.Queryable().FirstOrDefault(x => x.Id == idAluno.Value);
-            }else if(Request.Headers.Authorization != null)
+            }
+            else if (Request.Headers.Authorization != null)
             {
                 result = _repositorioViewAluno.Queryable()
-                    .FirstOrDefault(x => x.Token.Equals(Request.Headers.Authorization));
+                    .FirstOrDefault(x => x.Token == Request.Headers.Authorization.ToString());
             }
 
             if (result != null)
             {
                 result.Token = "";
-                if(result.Foto != null && result.Foto.Length > 0)
+                if (result.Foto != null && result.Foto.Length > 0)
                 {
                     result.FotoB64 = "data:image/jpeg;base64," + Convert.ToBase64String(result.Foto);
                 }
@@ -92,18 +95,32 @@ namespace Study.Controllers
             return MultipleResponse(HttpStatusCode.OK, result);
         }
 
+        [HttpGet]
+        [Route("logado")]
+        public HttpResponseMessage AlunoLogado()
+        {
+            _repositorioAluno = new Repository<Aluno>(CurrentSession());
+            Aluno result = null;
+            if (Request.Headers.Authorization != null)
+            {
+                result = _repositorioAluno.Queryable()
+                    .FirstOrDefault(x => x.Token == Request.Headers.Authorization.ToString());
+            }
+
+            return MultipleResponse(HttpStatusCode.OK, result);
+        }
+
         [HttpPost]
         [Route("cadastro")]
-        public HttpResponseMessage CadastrarAluno([FromBody]Aluno aluno)
+        public HttpResponseMessage CadastrarAluno([FromBody] Aluno aluno)
         {
             _repositorioAluno = new Repository<Aluno>(CurrentSession());
 
             ValidarCamposObrigatorios(aluno);
-            if(Errors == null || !HasError())
+            if (Errors == null || !HasError())
             {
                 VerificaUnicidade(aluno);
             }
-
             if (Errors != null && HasError())
             {
                 return SendErrorResponse(HttpStatusCode.BadRequest);
@@ -112,25 +129,154 @@ namespace Study.Controllers
             {
                 aluno.Token = GeraToken(aluno);
             }
-            
-            if(aluno.FotoB64 != null && aluno.FotoB64.Length > 0)
+            if (aluno.FotoB64 != null && aluno.FotoB64.Length > 0)
             {
-                var foto = aluno.FotoB64.Substring(aluno.FotoB64.IndexOf(",")+1);
+                var foto = aluno.FotoB64.Substring(aluno.FotoB64.IndexOf(",") + 1);
                 aluno.Foto = Convert.FromBase64String(foto);
             }
-
+            aluno.Senha = Crypto.SHA1(aluno.Senha);
             try
             {
                 _repositorioAluno.Save(aluno);
                 _repositorioAluno.Flush();
 
                 return MultipleResponse(HttpStatusCode.OK, aluno);
-            }catch(Exception e)
+            }
+            catch (Exception e)
             {
                 AddError("Não foi possível salvar.");
                 return SendErrorResponse(HttpStatusCode.BadRequest);
             }
         }
+
+        [HttpPut]
+        [Route("atualizar")]
+        public HttpResponseMessage AtualizarAluno([FromBody] Aluno aluno)
+        {
+            VerificaToken();
+            if (Errors != null & HasError())
+            {
+                return SendErrorResponse(HttpStatusCode.Unauthorized);
+            }
+
+            _repositorioAluno = new Repository<Aluno>(CurrentSession());
+
+            ValidarCamposObrigatorios(aluno);
+            VerificaUnicidade(aluno);
+            var temp = _repositorioAluno.FindById(aluno.Id);
+            if (temp != null && temp.Matricula != aluno.Matricula)
+            {
+                AddError("A Matrícula não pode ser alterada.");
+            }
+            if (Errors != null && HasError())
+            {
+                return SendErrorResponse(HttpStatusCode.BadRequest);
+            }
+            if (aluno.Id <= 0 || aluno.Token == null)
+            {
+                aluno.Token = GeraToken(aluno);
+            }
+            if (aluno.FotoB64 != null && aluno.FotoB64.Length > 0)
+            {
+                var foto = aluno.FotoB64.Substring(aluno.FotoB64.IndexOf(",") + 1);
+                aluno.Foto = Convert.FromBase64String(foto);
+            }
+            aluno.Senha = Crypto.SHA1(aluno.Senha);
+            try
+            {
+                _repositorioAluno.Save(aluno);
+                _repositorioAluno.Flush();
+
+                return MultipleResponse(HttpStatusCode.OK, aluno);
+            }
+            catch (Exception e)
+            {
+                AddError("Não foi possível salvar.");
+                return SendErrorResponse(HttpStatusCode.BadRequest);
+            }
+
+        }
+
+        [HttpPut]
+        [Route("esqueciSenha")]
+        public HttpResponseMessage EsqueciSenha([FromBody] string email)
+        {
+            _repositorioAluno = new Repository<Aluno>(CurrentSession());
+            Aluno aluno = null;
+            if (email != null && email.Length > 0)
+            {
+                aluno = _repositorioAluno.Queryable().FirstOrDefault(x => x.Email.ToLower().Equals(email.ToLower()));
+            }
+            if (aluno != null)
+            {
+                aluno.Senha = Crypto.SHA1("senhapadrao123");
+                aluno.Token = "";
+                try
+                {
+                    _repositorioAluno.Save(aluno);
+                    _repositorioAluno.Flush();
+                }
+                catch (Exception)
+                {
+                    AddError("Não foi possível resetar a senha do aluno.");
+                    return SendErrorResponse(HttpStatusCode.BadRequest);
+                }
+                MailMessage mail = new MailMessage("hcapuchop@gmail.com", email);
+                mail.Priority = MailPriority.High;
+                SmtpClient client = new SmtpClient();
+                client.Port = 587;
+                client.EnableSsl = true;
+                client.DeliveryMethod = SmtpDeliveryMethod.Network;
+                client.UseDefaultCredentials = false;
+                client.Credentials = new NetworkCredential("hcapuchop@gmail.com", "1103Bianca");
+                client.Host = "smtp.gmail.com";
+                mail.Subject = "Esquecimento de Senha - ClickStudy";
+                mail.Body = "Favor acessar o aplicativo com a senha: senhapadrao123";
+                client.Send(mail);
+                return MultipleResponse(HttpStatusCode.OK, "Email enviado com sucesso!");
+            }
+            
+            AddError("Não existe cadastro para o email informado");
+            return SendErrorResponse(HttpStatusCode.BadRequest);
+
+        }
+
+        [HttpGet]
+        [Route("grupos")]
+        public HttpResponseMessage ListarGrupos([FromUri] bool ativo)
+        {
+            VerificaToken();
+            if (Errors != null && HasError())
+            {
+                return SendErrorResponse(HttpStatusCode.Unauthorized);
+            }
+            _repositorioViewGrupos = new Repository<ViewGruposAluno>(CurrentSession());
+
+            var grupos = _repositorioViewGrupos.Queryable();
+            if (ativo)
+            {
+                grupos = grupos.Where(x => x.DataEncontro >= DateTime.Today);
+            }
+            else
+            {
+                grupos = grupos.Where(x => x.DataEncontro < DateTime.Today);
+            }
+            _repositorioAluno = new Repository<Aluno>(CurrentSession());
+            Aluno alunoLogado = null;
+            if (Request.Headers.Authorization != null)
+            {
+                alunoLogado = _repositorioAluno.Queryable()
+                    .FirstOrDefault(x => x.Token == Request.Headers.Authorization.ToString());
+            }
+            if (alunoLogado != null)
+            {
+                grupos = grupos.Where(x => x.IdAluno == alunoLogado.Id);
+            }
+
+            return MultipleResponse(HttpStatusCode.OK, grupos.ToList());
+        }
+
+
 
         private void ValidarCamposObrigatorios(Aluno aluno)
         {

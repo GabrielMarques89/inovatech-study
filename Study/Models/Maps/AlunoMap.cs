@@ -15,7 +15,7 @@ namespace Study.Models.Maps
             Map(reg => reg.Nome).Column("NOME").Length(128).Not.Nullable();
             Map(reg => reg.Email).Column("EMAIL").Length(128).Not.Nullable();
             Map(reg => reg.Telefone).Column("TELEFONE").Length(14);
-            Map(reg => reg.FotoB64).Column("FOTO");
+            Map(reg => reg.FotoB64).Column("FOTO").CustomSqlType("MEDIUMBLOB"); ;
             Map(reg => reg.Token).Column("TOKEN").Length(256);
         }
     }
