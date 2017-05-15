@@ -18,7 +18,7 @@ namespace Study.Controllers
         public HttpResponseMessage ListarDisciplinas([FromUri]string nomeDisciplina)
         {
             VerificaToken();
-            if (Errors != null & HasError())
+            if (Errors != null && HasError())
             {
                 return SendErrorResponse(HttpStatusCode.Unauthorized);
             }

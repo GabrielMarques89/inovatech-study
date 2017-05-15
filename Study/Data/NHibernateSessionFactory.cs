@@ -48,6 +48,7 @@ namespace Study.Data
             FluentConfiguration fluentConfiguration = Fluently.Configure()
 
                 .Database(MySQLConfiguration.Standard
+                    .Dialect<MySQLDialect>()
                     .ConnectionString(c => c.FromConnectionStringWithKey(connectionString))
                     .Driver<NHibernate.Driver.MySqlDataDriver>());
             foreach (Assembly assembly in assemblies)

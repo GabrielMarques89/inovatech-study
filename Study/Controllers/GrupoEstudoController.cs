@@ -16,6 +16,7 @@ namespace Study.Controllers
     {
         private Repository<GrupoEstudo> _repositorioGrupoEstudo;
         private Repository<Aluno> _repositorioAluno;
+        private Repository<Disciplina> _repositorioDisciplina;
         private Repository<Participacao> _repositorioParticipacao;
         private Repository<ViewAlunosGrupo> _repositorioViewAlunosGrupo;
 
@@ -50,7 +51,7 @@ namespace Study.Controllers
         public HttpResponseMessage GetGrupo([FromUri]long? idGrupo)
         {
             VerificaToken();
-            if (Errors != null & HasError())
+            if (Errors != null && HasError())
             {
                 return SendErrorResponse(HttpStatusCode.Unauthorized);
             }
@@ -61,7 +62,8 @@ namespace Study.Controllers
             {
                 result = _repositorioGrupoEstudo.Queryable().FirstOrDefault(x => x.Id == idGrupo.Value);
             }
-
+            result.Disciplina = null;
+            result.Lider = null;
             return MultipleResponse(HttpStatusCode.OK, result);
         }
 
@@ -70,7 +72,7 @@ namespace Study.Controllers
         public HttpResponseMessage GetAlunosGrupo()
         {
             VerificaToken();
-            if (Errors != null & HasError())
+            if (Errors != null && HasError())
             {
                 return SendErrorResponse(HttpStatusCode.Unauthorized);
             }
@@ -81,6 +83,61 @@ namespace Study.Controllers
             return MultipleResponse(HttpStatusCode.OK, result);
         }
 
+
+        [HttpPost]
+        [Route("criar")]
+        public HttpResponseMessage CriarGrupo([FromBody]GrupoEstudo grupo)
+        {
+            _repositorioGrupoEstudo = new Repository<GrupoEstudo>(CurrentSession());
+            _repositorioDisciplina = new Repository<Disciplina>(CurrentSession());
+            _repositorioAluno = new Repository<Aluno>(CurrentSession());
+            ValidarCamposObrigatorios(grupo);
+
+            if (Errors != null && HasError())
+            {
+                return SendErrorResponse(HttpStatusCode.BadRequest);
+            }
+            grupo.Disciplina = _repositorioDisciplina.FindById(1);
+            grupo.Lider = _repositorioAluno.FindById(1);
+            try
+            {
+                _repositorioGrupoEstudo.Save(grupo);
+                _repositorioGrupoEstudo.Flush();
+                grupo.Disciplina = null;
+                grupo.Lider = null;
+                return MultipleResponse(HttpStatusCode.OK, grupo);
+            }
+            catch (Exception e)
+            {
+                AddError(e.Message);
+                return SendErrorResponse(HttpStatusCode.BadRequest);
+            }
+        }
+
+        private void ValidarCamposObrigatorios(GrupoEstudo grupo)
+        {
+            if (string.IsNullOrEmpty(grupo.Nome))
+            {
+                AddError("O campo [Nome] é obrigatório.");
+            }
+            if (string.IsNullOrEmpty(grupo.Local))
+            {
+                AddError("O campo [Local] é obrigatório.");
+            }
+            if (string.IsNullOrEmpty(grupo.Descricao))
+            {
+                AddError("O campo [Descricao] é obrigatório.");
+            }
+            if (grupo.QuantidadeMaxAlunos == 0)
+            {
+                AddError("O campo [Quantida Máxima de Alunos] é obrigatório.");
+            }
+            if (grupo.DataEncontro == DateTime.MinValue)
+            {
+                AddError("O campo [Data Encontro] é obrigatório.");
+            }
+
+        }
 
     }
 }

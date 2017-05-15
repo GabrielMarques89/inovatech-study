@@ -22,7 +22,7 @@ namespace Study.Controllers
         public HttpResponseMessage SolicitarParticipacao([FromUri] long? idGrupo)
         {
             VerificaToken();
-            if (Errors != null & HasError())
+            if (Errors != null && HasError())
             {
                 return SendErrorResponse(HttpStatusCode.Unauthorized);
             }
@@ -82,7 +82,7 @@ namespace Study.Controllers
         public HttpResponseMessage ListarParticipacoesPendentes([FromUri] DateTime? data)
         {
             VerificaToken();
-            if (Errors != null & HasError())
+            if (Errors != null && HasError())
             {
                 return SendErrorResponse(HttpStatusCode.Unauthorized);
             }
@@ -114,7 +114,7 @@ namespace Study.Controllers
         public HttpResponseMessage AprovarParticipacap([FromUri] long? idParticipacao, [FromUri] bool autoriza)
         {
             VerificaToken();
-            if (Errors != null & HasError())
+            if (Errors != null && HasError())
             {
                 return SendErrorResponse(HttpStatusCode.Unauthorized);
             }

@@ -193,6 +193,7 @@
     <Compile Include="Controllers\ParticipacaoController.cs" />
     <Compile Include="Data\Conventions\PrimaryKeyConvention.cs" />
     <Compile Include="Data\Conventions\NameConvention.cs" />
+    <Compile Include="Data\MySQL5GuidFixDialect.cs" />
     <Compile Include="Models\Avaliacao.cs" />
     <Compile Include="Models\Curso.cs" />
     <Compile Include="Models\Disciplina.cs" />

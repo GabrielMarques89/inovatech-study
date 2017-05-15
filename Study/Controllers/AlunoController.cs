@@ -154,7 +154,7 @@ namespace Study.Controllers
         public HttpResponseMessage AtualizarAluno([FromBody] Aluno aluno)
         {
             VerificaToken();
-            if (Errors != null & HasError())
+            if (Errors != null && HasError())
             {
                 return SendErrorResponse(HttpStatusCode.Unauthorized);
             }

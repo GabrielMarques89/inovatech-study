@@ -32,12 +32,7 @@ namespace Study.Controllers
 
         public string ToJSON(object obj)
         {
-            return JsonConvert.SerializeObject(obj,
-                new JsonSerializerSettings
-                {
-                    ContractResolver = new CamelCasePropertyNamesContractResolver(),
-                    NullValueHandling = NullValueHandling.Ignore
-                });
+            return JsonConvert.SerializeObject(obj);
         }
 
         public HttpResponseMessage Response(object content)
