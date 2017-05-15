@@ -88,11 +88,17 @@ namespace Study.Controllers
         [Route("criar")]
         public HttpResponseMessage CriarGrupo([FromBody]GrupoEstudo grupo)
         {
+            VerificaToken();
+            if (Errors != null && HasError())
+            {
+                return SendErrorResponse(HttpStatusCode.Unauthorized);
+            }
+
             _repositorioGrupoEstudo = new Repository<GrupoEstudo>(CurrentSession());
             _repositorioDisciplina = new Repository<Disciplina>(CurrentSession());
             _repositorioAluno = new Repository<Aluno>(CurrentSession());
+            
             ValidarCamposObrigatorios(grupo);
-
             if (Errors != null && HasError())
             {
                 return SendErrorResponse(HttpStatusCode.BadRequest);

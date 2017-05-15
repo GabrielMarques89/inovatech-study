@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -64,11 +65,21 @@ namespace Study.Controllers
             {
                 part.Participando = null;
             }
+            ParticipacaoDTO result = new ParticipacaoDTO
+            {
+                IdAluno = part.Aluno.Id,
+                IdGrupo = part.Grupo.Id,
+                NomeAluno = part.Aluno.Nome,
+                NomeGrupo = part.Grupo.Nome,
+                Participando = part.Participando,
+                Recebendo = aluno != null && part.Aluno.Id == aluno.Id,
+                Tipo = part.Tipo
+            };
             try
             {
                 _repositorioParticipacao.Save(part);
                 _repositorioParticipacao.Flush();
-                return MultipleResponse(HttpStatusCode.OK, part);
+                return MultipleResponse(HttpStatusCode.OK, result);
             }
             catch (Exception)
             {
@@ -89,7 +100,7 @@ namespace Study.Controllers
 
             _repositorioAluno = new Repository<Aluno>(CurrentSession());
             _repositorioParticipacao = new Repository<Participacao>(CurrentSession());
-            var result = _repositorioParticipacao.Queryable().Where(x => x.Participando == null);
+            var query = _repositorioParticipacao.Queryable().Where(x => x.Participando == null);
             Aluno aluno = null;
             if (Request.Headers.Authorization != null)
             {
@@ -98,15 +109,26 @@ namespace Study.Controllers
             }
             if (data != null)
             {
-                result = result.Where(x => x.Grupo.DataEncontro.Date > data.Value.Date);
+                query = query.Where(x => x.Grupo.DataEncontro.Date > data.Value.Date);
             }
             if (aluno != null)
             {
-                result = result.Where(x => (x.Aluno.Id != aluno.Id && x.Grupo.Lider.Id == aluno.Id) 
+                query = query.Where(x => (x.Aluno.Id != aluno.Id && x.Grupo.Lider.Id == aluno.Id) 
                                             || (x.Aluno.Id == aluno.Id));
             }
+            var result = query.ToList().Select(x => new ParticipacaoDTO
+            {
+                IdParticipacao = x.Id,
+                IdAluno = x.Aluno.Id,
+                IdGrupo = x.Grupo.Id,
+                NomeAluno = x.Aluno.Nome,
+                NomeGrupo = x.Grupo.Nome,
+                Participando = x.Participando,
+                Recebendo = aluno != null && x.Aluno.Id == aluno.Id,
+                Tipo = x.Tipo
+            });
 
-            return MultipleResponse(HttpStatusCode.OK, result.ToList());
+            return MultipleResponse(HttpStatusCode.OK, result);
         }
 
         [HttpPut]
