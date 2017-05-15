@@ -197,8 +197,9 @@
     <Compile Include="Models\Avaliacao.cs" />
     <Compile Include="Models\Curso.cs" />
     <Compile Include="Models\Disciplina.cs" />
+    <Compile Include="Models\DTO\GrupoEstudoDTO.cs" />
     <Compile Include="Models\Enums\TipoParticipacao.cs" />
-    <Compile Include="Models\ErrorDTO.cs" />
+    <Compile Include="Models\DTO\ErrorDTO.cs" />
     <Compile Include="Models\GrupoEstudo.cs" />
     <Compile Include="Models\Instituicao.cs" />
     <Compile Include="Models\Maps\AvaliacaoMap.cs" />
@@ -221,7 +222,7 @@
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
-    <Compile Include="Models\ParticipacaoDTO.cs" />
+    <Compile Include="Models\DTO\ParticipacaoDTO.cs" />
     <Compile Include="Models\Views\ViewAlunosGrupo.cs" />
     <Compile Include="Models\Views\ViewAluno.cs" />
     <Compile Include="Models\Views\ViewGruposAluno.cs" />

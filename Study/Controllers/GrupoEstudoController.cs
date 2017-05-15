@@ -6,6 +6,7 @@ using System.Web.Http;
 using System.Web.WebPages;
 using Study.Data;
 using Study.Models;
+using Study.Models.DTO;
 using Study.Models.Enums;
 using Study.Models.Views;
 
@@ -23,7 +24,7 @@ namespace Study.Controllers
         [HttpGet]
         [Route("buscar")]
         public HttpResponseMessage ListarGrupos([FromUri]string nomeGrupo, [FromUri]string nomeDisciplina
-            , [FromUri]string ordenaPor)
+            , [FromUri]string ordenaPor, [FromUri]DateTime data)
         {
             VerificaToken();
             if (Errors != null & HasError())
@@ -42,8 +43,26 @@ namespace Study.Controllers
             {
                 result = result.Where(x => x.Disciplina.Nome.ToLower().Contains(nomeDisciplina.ToLower()));
             }
+            if (data != null)
+            {
+                result = result.Where(x => x.DataEncontro >= data.Date);
+            }
 
-            return MultipleResponse(HttpStatusCode.OK, result.ToList());
+            var grupos = result.ToList().Select(x => new GrupoEstudoDTO
+            {
+                DataEncontro = x.DataEncontro,
+                Descricao = x.Descricao,
+                IdDisciplina = x.Disciplina.Id,
+                IdLider = x.Lider.Id,
+                Local = x.Local,
+                Nome = x.Nome,
+                NomeDisciplina = x.Disciplina.Nome,
+                NomeLider = x.Lider.Nome,
+                Privado = x.Privado,
+                QuantidadeMaxAlunos = x.QuantidadeMaxAlunos
+            });
+            
+            return MultipleResponse(HttpStatusCode.OK, grupos);
         }
 
         [HttpGet]
@@ -62,9 +81,21 @@ namespace Study.Controllers
             {
                 result = _repositorioGrupoEstudo.Queryable().FirstOrDefault(x => x.Id == idGrupo.Value);
             }
-            result.Disciplina = null;
-            result.Lider = null;
-            return MultipleResponse(HttpStatusCode.OK, result);
+            GrupoEstudoDTO dto = new GrupoEstudoDTO();
+            if (result != null)
+            {
+                dto.Nome = result.Nome;
+                dto.DataEncontro = result.DataEncontro;
+                dto.Descricao = result.Descricao;
+                dto.Local = result.Local;
+                dto.Privado = result.Privado;
+                dto.QuantidadeMaxAlunos = result.QuantidadeMaxAlunos;
+                dto.IdDisciplina = result.Disciplina.Id;
+                dto.NomeDisciplina = result.Disciplina.Nome;
+                dto.IdLider = result.Lider.Id;
+                dto.NomeLider = result.Lider.Nome;
+            }
+            return MultipleResponse(HttpStatusCode.OK, dto);
         }
 
         [HttpGet]
