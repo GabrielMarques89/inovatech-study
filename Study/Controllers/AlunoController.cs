@@ -235,9 +235,16 @@ namespace Study.Controllers
             {
                 aluno.Token = GeraToken(aluno);
             }
-            aluno.Senha = Crypto.SHA1(aluno.Senha);
+            if (string.IsNullOrEmpty(aluno.Senha))
+            {
+                aluno.Senha = temp.Senha;
+            }else
+            {
+                aluno.Senha = Crypto.SHA1(aluno.Senha);
+            }
             try
             {
+                CurrentSession().Evict(temp);
                 _repositorioAluno.Save(aluno);
                 _repositorioAluno.Flush();
 
@@ -264,7 +271,7 @@ namespace Study.Controllers
             if (aluno != null)
             {
                 aluno.Senha = Crypto.SHA1("senhapadrao123");
-                aluno.Token = "";
+                aluno.Token = GeraToken(aluno);
                 try
                 {
                     _repositorioAluno.Save(aluno);
@@ -349,7 +356,7 @@ namespace Study.Controllers
             {
                 AddError("O campo [Matrícula] é obrigatório.");
             }
-            if (string.IsNullOrEmpty(aluno.Senha))
+            if (string.IsNullOrEmpty(aluno.Senha) && aluno.Id < 1)
             {
                 AddError("O campo [Senha] é obrigatório.");
             }
