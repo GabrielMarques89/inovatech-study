@@ -269,7 +269,7 @@ namespace Study.Controllers
                 mail.Subject = "Esquecimento de Senha - ClickStudy";
                 mail.Body = "Favor acessar o aplicativo com a senha: senhapadrao123";
                 client.Send(mail);
-                return MultipleResponse(HttpStatusCode.OK, "Email enviado com sucesso!");
+                return MultipleResponse(HttpStatusCode.OK, null);
             }
             
             AddError("Não existe cadastro para o email informado");

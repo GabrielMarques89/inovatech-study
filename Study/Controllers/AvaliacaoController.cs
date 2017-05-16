@@ -72,6 +72,21 @@ namespace Study.Controllers
             {
                 return SendErrorResponse(HttpStatusCode.BadRequest);
             }
+
+            _repositorioAvaliacao = new Repository<Avaliacao>(CurrentSession());
+
+            if (_repositorioAvaliacao.Queryable().Count(x => x.Avaliado.Id == avaliado.Id
+                        && x.Avaliador.Id == avaliador.Id && x.Grupo.Id == grupo.Id) > 0)
+            {
+                AddError("Você já avaliou este aluno.");
+                return SendErrorResponse(HttpStatusCode.BadRequest);
+            }
+            if(avaliado.Id == avaliador.Id)
+            {
+                AddError("Não é possível avaliar a sí mesmo.");
+                return SendErrorResponse(HttpStatusCode.BadRequest);
+            }
+
             Avaliacao aval = new Avaliacao
             {
                 Avaliado = avaliado,
@@ -82,7 +97,6 @@ namespace Study.Controllers
             };
             try
             {
-                _repositorioAvaliacao = new Repository<Avaliacao>(CurrentSession());
                 _repositorioAvaliacao.Save(aval);
                 _repositorioAvaliacao.Flush();
                 return MultipleResponse(HttpStatusCode.OK, null);

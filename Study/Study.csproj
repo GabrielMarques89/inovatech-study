@@ -198,6 +198,7 @@
     <Compile Include="Models\Avaliacao.cs" />
     <Compile Include="Models\Curso.cs" />
     <Compile Include="Models\Disciplina.cs" />
+    <Compile Include="Models\DTO\AlunoDTO.cs" />
     <Compile Include="Models\DTO\AvaliacaoDTO.cs" />
     <Compile Include="Models\DTO\ErrorDTO.cs" />
     <Compile Include="Models\DTO\GrupoEstudoDTO.cs" />
