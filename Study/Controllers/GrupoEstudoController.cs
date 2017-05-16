@@ -23,8 +23,7 @@ namespace Study.Controllers
 
         [HttpGet]
         [Route("buscar")]
-        public HttpResponseMessage ListarGrupos([FromUri]string nomeGrupo, [FromUri]string nomeDisciplina
-            , [FromUri]string ordenaPor, [FromUri]DateTime data)
+        public HttpResponseMessage ListarGrupos([FromUri]string nomeGrupo, [FromUri]string nomeDisciplina, [FromUri]DateTime? data)
         {
             VerificaToken();
             if (Errors != null & HasError())
@@ -43,14 +42,15 @@ namespace Study.Controllers
             {
                 result = result.Where(x => x.Disciplina.Nome.ToLower().Contains(nomeDisciplina.ToLower()));
             }
-            if (data != null)
+            if (data.HasValue)
             {
-                result = result.Where(x => x.DataEncontro >= data.Date);
+                result = result.Where(x => x.DataEncontro.CompareTo(data.HasValue) >= 0);
             }
 
             var grupos = result.ToList().Select(x => new GrupoEstudoDTO
             {
-                DataEncontro = x.DataEncontro,
+                Id = x.Id,
+                DataEncontro = new DateTimeOffset(x.DataEncontro),
                 Descricao = x.Descricao,
                 IdDisciplina = x.Disciplina.Id,
                 IdLider = x.Lider.Id,
@@ -66,8 +66,8 @@ namespace Study.Controllers
         }
 
         [HttpGet]
-        [Route("detalhar")]
-        public HttpResponseMessage GetGrupo([FromUri]long? idGrupo)
+        [Route("detalhar/{id}")]
+        public HttpResponseMessage GetGrupo([FromUri]long? id)
         {
             VerificaToken();
             if (Errors != null && HasError())
@@ -77,9 +77,9 @@ namespace Study.Controllers
 
             _repositorioGrupoEstudo = new Repository<GrupoEstudo>(CurrentSession());
             GrupoEstudo result = null;
-            if (idGrupo.HasValue)
+            if (id.HasValue)
             {
-                result = _repositorioGrupoEstudo.Queryable().FirstOrDefault(x => x.Id == idGrupo.Value);
+                result = _repositorioGrupoEstudo.Queryable().FirstOrDefault(x => x.Id == id.Value);
             }
             GrupoEstudoDTO dto = new GrupoEstudoDTO();
             if (result != null)
@@ -94,13 +94,25 @@ namespace Study.Controllers
                 dto.NomeDisciplina = result.Disciplina.Nome;
                 dto.IdLider = result.Lider.Id;
                 dto.NomeLider = result.Lider.Nome;
+                dto.FotoLider = result.Lider.Foto;
+                var logado = new Repository<Aluno>(CurrentSession()).Queryable().FirstOrDefault(x => x.Token == Request.Headers.Authorization.ToString());
+                if(logado != null)
+                {
+                    dto.IsLider = logado.Id == result.Lider.Id;
+                    var existe = new Repository<Participacao>(CurrentSession()).Queryable().Count(x => x.Aluno.Id == logado.Id && x.Grupo.Id == result.Id);
+                    dto.Participando = existe > 0;
+                }else
+                {
+                    dto.IsLider = false;
+                    dto.Participando = false;
+                }
             }
             return MultipleResponse(HttpStatusCode.OK, dto);
         }
 
         [HttpGet]
-        [Route("alunos")]
-        public HttpResponseMessage GetAlunosGrupo()
+        [Route("detalhar/{id}/membros")]
+        public HttpResponseMessage GetAlunosGrupo([FromUri] long id)
         {
             VerificaToken();
             if (Errors != null && HasError())
@@ -109,7 +121,8 @@ namespace Study.Controllers
             }
 
             _repositorioViewAlunosGrupo = new Repository<ViewAlunosGrupo>(CurrentSession());
-            var result = _repositorioViewAlunosGrupo.Queryable().ToList();
+            var result = _repositorioViewAlunosGrupo.Queryable()
+                .Where(x => x.IdGrupo == id).ToList();
 
             return MultipleResponse(HttpStatusCode.OK, result);
         }
@@ -134,12 +147,26 @@ namespace Study.Controllers
             {
                 return SendErrorResponse(HttpStatusCode.BadRequest);
             }
-            grupo.Disciplina = _repositorioDisciplina.FindById(1);
-            grupo.Lider = _repositorioAluno.FindById(1);
+            grupo.Disciplina = _repositorioDisciplina.FindById(grupo.Disciplina.Id);
+            var alunoLogado = _repositorioAluno.Queryable()
+                .FirstOrDefault(x => x.Token == Request.Headers.Authorization.ToString());
+            grupo.Lider = alunoLogado;
+
             try
             {
                 _repositorioGrupoEstudo.Save(grupo);
                 _repositorioGrupoEstudo.Flush();
+                var participacao = new Participacao
+                {
+                    Tipo = TipoParticipacao.Lider,
+                    Aluno = grupo.Lider,
+                    Grupo = grupo,
+                    Participando = true,
+                    Version = 0
+                };
+                _repositorioParticipacao = new Repository<Participacao>(CurrentSession());
+                _repositorioParticipacao.Save(participacao);
+                _repositorioParticipacao.Flush();
                 grupo.Disciplina = null;
                 grupo.Lider = null;
                 return MultipleResponse(HttpStatusCode.OK, grupo);
@@ -161,15 +188,11 @@ namespace Study.Controllers
             {
                 AddError("O campo [Local] é obrigatório.");
             }
-            if (string.IsNullOrEmpty(grupo.Descricao))
-            {
-                AddError("O campo [Descricao] é obrigatório.");
-            }
             if (grupo.QuantidadeMaxAlunos == 0)
             {
                 AddError("O campo [Quantida Máxima de Alunos] é obrigatório.");
             }
-            if (grupo.DataEncontro == DateTime.MinValue)
+            if (grupo.DataEncontro == DateTimeOffset.MinValue)
             {
                 AddError("O campo [Data Encontro] é obrigatório.");
             }

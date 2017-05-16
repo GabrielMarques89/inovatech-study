@@ -81,12 +81,12 @@ namespace Study.Controllers
 
         public bool HasError()
         {
-            return Errors.IsEmpty() == false;
+            return Errors != null && Errors.IsEmpty() == false;
         }
 
         public HttpResponseMessage SendErrorResponse(HttpStatusCode status)
         {
-            return Response(status, ToJSON(new { errors = Errors }));
+            return Response(status, ToJSON(new { Errors = Errors }));
         }
 
         public HttpResponseMessage SendErrorResponse(HttpStatusCode status, ICollection<string> errors)

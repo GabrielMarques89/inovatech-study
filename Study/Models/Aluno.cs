@@ -8,8 +8,7 @@ namespace Study.Models
         public virtual string Nome { get; set; }
         public virtual string Email { get; set; }
         public virtual string Telefone { get; set; }
-        public virtual byte[] Foto { get; set; }
-        public virtual string FotoB64 { get; set; }
+        public virtual string Foto { get; set; }
         public virtual string Token { get; set; }
     }
 }

@@ -10,6 +10,9 @@ using Study.Models.Views;
 using System;
 using System.Net.Mail;
 using System.Web.Helpers;
+using System.Drawing;
+using System.IO;
+using System.Web;
 
 namespace Study.Controllers
 {
@@ -42,7 +45,7 @@ namespace Study.Controllers
 
             if (alunoEncontrado == null)
             {
-                AddError("A [Matrícula] e/ou a [Senha] informados são inválidos.");
+                AddError("A Matrícula e/ou a Senha informados são inválidos.");
             }
 
             if (Errors != null && HasError())
@@ -50,21 +53,33 @@ namespace Study.Controllers
                 return SendErrorResponse(HttpStatusCode.BadRequest);
             }
 
-            return MultipleResponse(HttpStatusCode.OK, alunoEncontrado);
+            return MultipleResponse(HttpStatusCode.OK, new Aluno
+            {
+                Token = alunoEncontrado.Token
+            });
         }
 
         [HttpGet]
-        [Route("auth")]
-        public HttpResponseMessage Autenticar()
+        [Route("simplesDetalhamento")]
+        public HttpResponseMessage GetAluno()
         {
-            var encontrado =
-                _repositorioAluno.Queryable().FirstOrDefault(x => x.Token.Equals(Request.Headers.Authorization)) != null;
-            if (!encontrado)
+            _repositorioViewAluno = new Repository<ViewAluno>(CurrentSession());
+            ViewAluno result = null;
+            string val = Request.Headers.Authorization.Scheme;
+                result = _repositorioViewAluno.Queryable()
+                    .FirstOrDefault(x => x.Token.Equals(Request.Headers.Authorization.Scheme));
+
+            if (result != null)
             {
-                AddError("O aluno não está mais autenticado");
-                return SendErrorResponse(HttpStatusCode.Unauthorized);
+                result = new ViewAluno
+                {
+                    Id = result.Id,
+                    Nome = result.Nome,
+                    Matricula = result.Matricula
+                };
             }
-            return MultipleResponse(HttpStatusCode.OK, null);
+
+            return MultipleResponse(HttpStatusCode.OK, result);
         }
 
         [HttpGet]
@@ -73,26 +88,55 @@ namespace Study.Controllers
         {
             _repositorioViewAluno = new Repository<ViewAluno>(CurrentSession());
             ViewAluno result = null;
-            if (idAluno.HasValue)
+            if (idAluno.HasValue && idAluno >= 0)
             {
                 result = _repositorioViewAluno.Queryable().FirstOrDefault(x => x.Id == idAluno.Value);
             }
             else if (Request.Headers.Authorization != null)
             {
+                string val = Request.Headers.Authorization.Scheme;
                 result = _repositorioViewAluno.Queryable()
-                    .FirstOrDefault(x => x.Token == Request.Headers.Authorization.ToString());
+                    .FirstOrDefault(x => x.Token.Equals(Request.Headers.Authorization.Scheme));
             }
 
             if (result != null)
             {
                 result.Token = "";
-                if (result.Foto != null && result.Foto.Length > 0)
-                {
-                    result.FotoB64 = "data:image/jpeg;base64," + Convert.ToBase64String(result.Foto);
-                }
+                result.Foto = "";
             }
 
             return MultipleResponse(HttpStatusCode.OK, result);
+        }
+
+        [HttpGet]
+        [Route("detalhar/foto")]
+        public HttpResponseMessage GetPhoto(long? idAluno)
+        {
+            _repositorioViewAluno = new Repository<ViewAluno>(CurrentSession());
+            String result = null;
+            if (idAluno.HasValue && idAluno >= 0)
+            {
+                result = _repositorioViewAluno.Queryable().Where(x => x.Id == idAluno.Value)
+                    .Select(x => x.Foto).FirstOrDefault();
+            }
+            else if (Request.Headers.Authorization != null)
+            {
+                string val = Request.Headers.Authorization.Scheme;
+                result = _repositorioViewAluno.Queryable()
+                    .Where(x => x.Token.Equals(Request.Headers.Authorization.Scheme))
+                    .Select(x => x.Foto).FirstOrDefault();
+            }
+
+            if (result != null && result.Length > 0)
+            {
+                Aluno aluno = new Aluno
+                {
+                    Foto = result
+                };
+                return MultipleResponse(HttpStatusCode.OK, aluno);
+            }
+
+            return MultipleResponse(HttpStatusCode.NoContent, null);
         }
 
         [HttpGet]
@@ -104,7 +148,7 @@ namespace Study.Controllers
             if (Request.Headers.Authorization != null)
             {
                 result = _repositorioAluno.Queryable()
-                    .FirstOrDefault(x => x.Token == Request.Headers.Authorization.ToString());
+                    .FirstOrDefault(x => x.Token == Request.Headers.Authorization.Scheme.ToString());
             }
 
             return MultipleResponse(HttpStatusCode.OK, result);
@@ -129,12 +173,8 @@ namespace Study.Controllers
             {
                 aluno.Token = GeraToken(aluno);
             }
-            if (aluno.FotoB64 != null && aluno.FotoB64.Length > 0)
-            {
-                var foto = aluno.FotoB64.Substring(aluno.FotoB64.IndexOf(",") + 1);
-                aluno.Foto = Convert.FromBase64String(foto);
-            }
             aluno.Senha = Crypto.SHA1(aluno.Senha);
+
             try
             {
                 _repositorioAluno.Save(aluno);
@@ -175,11 +215,6 @@ namespace Study.Controllers
             if (aluno.Id <= 0 || aluno.Token == null)
             {
                 aluno.Token = GeraToken(aluno);
-            }
-            if (aluno.FotoB64 != null && aluno.FotoB64.Length > 0)
-            {
-                var foto = aluno.FotoB64.Substring(aluno.FotoB64.IndexOf(",") + 1);
-                aluno.Foto = Convert.FromBase64String(foto);
             }
             aluno.Senha = Crypto.SHA1(aluno.Senha);
             try
@@ -255,6 +290,7 @@ namespace Study.Controllers
             var grupos = _repositorioViewGrupos.Queryable();
             if (ativo)
             {
+                var a = DateTime.Today;
                 grupos = grupos.Where(x => x.DataEncontro >= DateTime.Today);
             }
             else

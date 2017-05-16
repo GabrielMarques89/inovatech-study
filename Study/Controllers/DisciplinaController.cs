@@ -30,7 +30,11 @@ namespace Study.Controllers
             {
                 result = result.Where(x => x.Nome.ToLower().Contains(nomeDisciplina.ToLower()));
             }
-            return MultipleResponse(HttpStatusCode.OK, result.ToList());
+            return MultipleResponse(HttpStatusCode.OK, result.Select(x => new Disciplina
+            {
+                Nome = x.Nome,
+                Id = x.Id
+            }).ToList());
 
         }
 

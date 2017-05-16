@@ -21,6 +21,7 @@ namespace Study.Models.Maps
             Map(reg => reg.Foto).Column("FOTO");
             Map(reg => reg.Indicacoes).Column("INDICACOES");
             Map(reg => reg.ContraIndicacoes).Column("CONTRA_INDICACOES");
+            Map(reg => reg.Token).Column("TOKEN");
 
         }
     }

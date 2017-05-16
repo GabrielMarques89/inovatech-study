@@ -20,9 +20,10 @@ namespace Study.Models.Maps
             Map(reg => reg.Nome).Column("NOME");
             Map(reg => reg.Email).Column("EMAIL");
             Map(reg => reg.Telefone).Column("TELEFONE");
-            Map(reg => reg.FotoB64).Column("FOTO");
+            Map(reg => reg.Foto).Column("FOTO");
             Map(reg => reg.IdGrupo).Column("ID_GRUPO_ESTUDO");
             Map(reg => reg.NomeGrupo).Column("NOME_GRUPO");
+            Map(reg => reg.Token).Column("TOKEN");
             Map(reg => reg.Tipo).Column("TIPO").CustomType<EnumType<TipoParticipacao>>();
             
         }

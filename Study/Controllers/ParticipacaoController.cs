@@ -79,7 +79,7 @@ namespace Study.Controllers
             {
                 _repositorioParticipacao.Save(part);
                 _repositorioParticipacao.Flush();
-                return MultipleResponse(HttpStatusCode.OK, result);
+                return MultipleResponse(HttpStatusCode.OK, null);
             }
             catch (Exception)
             {
@@ -109,6 +109,7 @@ namespace Study.Controllers
             }
             if (data != null)
             {
+                //result = result.Where(x => x.Grupo.DataEncontro > data.Value.Date);
                 query = query.Where(x => x.Grupo.DataEncontro.Date > data.Value.Date);
             }
             if (aluno != null)
@@ -133,7 +134,7 @@ namespace Study.Controllers
 
         [HttpPut]
         [Route("aprovar")]
-        public HttpResponseMessage AprovarParticipacap([FromUri] long? idParticipacao, [FromUri] bool autoriza)
+        public HttpResponseMessage AprovarParticipacao([FromBody] Participacao participacao)
         {
             VerificaToken();
             if (Errors != null && HasError())
@@ -141,15 +142,47 @@ namespace Study.Controllers
                 return SendErrorResponse(HttpStatusCode.Unauthorized);
             }
 
+            var part = ResponderSolicitacao(participacao, true);
+
+            if (Errors != null & HasError())
+            {
+                return SendErrorResponse(HttpStatusCode.Unauthorized);
+            }
+
+            return MultipleResponse(HttpStatusCode.OK, part);
+        }
+
+        [HttpPut]
+        [Route("recusar")]
+        public HttpResponseMessage RecusarParticipacao([FromBody] Participacao participacao)
+        {
+            VerificaToken();
+            if (Errors != null & HasError())
+            {
+                return SendErrorResponse(HttpStatusCode.Unauthorized);
+            }
+
+            var part = ResponderSolicitacao(participacao, false);
+
+            if (Errors != null & HasError())
+            {
+                return SendErrorResponse(HttpStatusCode.Unauthorized);
+            }
+
+            return MultipleResponse(HttpStatusCode.OK, part);
+        }
+
+        private Participacao ResponderSolicitacao(Participacao participacao, bool aprovar)
+        {
             _repositorioParticipacao = new Repository<Participacao>(CurrentSession());
             Participacao part = null;
-            if (idParticipacao.HasValue)
+            if (participacao != null)
             {
-                part = _repositorioParticipacao.FindById(idParticipacao.Value);
+                part = _repositorioParticipacao.FindById(participacao.Id);
             }
             if (part != null)
             {
-                part.Participando = autoriza;
+                part.Participando = aprovar;
                 try
                 {
                     _repositorioParticipacao.Save(part);
@@ -158,10 +191,52 @@ namespace Study.Controllers
                 catch
                 {
                     AddError("Não foi possível salvar.");
-                    return SendErrorResponse(HttpStatusCode.BadRequest);
+                    return null;
                 }
             }
-            return MultipleResponse(HttpStatusCode.OK, part);
+            return part;
+        }
+
+        [HttpPut]
+        [Route("cancelar")]
+        public HttpResponseMessage CancelarParticipacap([FromBody] Participacao participacao)
+        {
+            VerificaToken();
+
+            if (Errors != null & HasError())
+            {
+                return SendErrorResponse(HttpStatusCode.Unauthorized);
+            }
+
+            if (participacao != null)
+            {
+                bool exists = _repositorioParticipacao.Queryable().Where(x => x.Id == participacao.Id).Count() > 0;
+                if (exists)
+                {
+                    try
+                    {
+                        _repositorioParticipacao.Delete(participacao.Id);
+                        _repositorioParticipacao.Flush();
+                    }
+                    catch
+                    {
+                        AddError("Não foi possível cancelar.");
+                    }
+                }else
+                {
+                    AddError("O pedido não existe mais.");
+                }
+            }else
+            {
+                AddError("Informe o pedido de participação.");
+            }
+
+            if (Errors != null & HasError())
+            {
+                return SendErrorResponse(HttpStatusCode.Unauthorized);
+            }
+
+            return MultipleResponse(HttpStatusCode.OK, null);
         }
 
 
