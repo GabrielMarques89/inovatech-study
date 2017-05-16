@@ -316,7 +316,6 @@ namespace Study.Controllers
             var grupos = _repositorioViewGrupos.Queryable();
             if (ativo)
             {
-                var a = DateTime.Today;
                 grupos = grupos.Where(x => x.DataEncontro >= DateTime.Today);
             }
             else
@@ -342,9 +341,7 @@ namespace Study.Controllers
                 Nome = x.NomeGrupo,
                 NomeDisciplina = x.NomeDisciplina,
                 IdDisciplina = x.IdDisciplina,
-                Participando = repositorioParticipacao.Queryable()
-                    .Count(y => y.Aluno.Id == (alunoLogado == null ? 0 : alunoLogado.Id)
-                        && y.Grupo.Id == x.IdGrupo) >0
+                Participando = true
             }).ToList());
         }
 
