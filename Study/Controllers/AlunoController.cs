@@ -333,7 +333,6 @@ namespace Study.Controllers
             {
                 grupos = grupos.Where(x => x.IdAluno == alunoLogado.Id);
             }
-            var repositorioParticipacao = new Repository<Participacao>(CurrentSession());
             return MultipleResponse(HttpStatusCode.OK, grupos.Select(x => new GrupoEstudoDTO
             {
                 Id = x.IdGrupo,
