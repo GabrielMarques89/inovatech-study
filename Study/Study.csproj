@@ -190,6 +190,7 @@
     <Compile Include="Controllers\BaseApiController.cs" />
     <Compile Include="Controllers\DisciplinaController.cs" />
     <Compile Include="Controllers\GrupoEstudoController.cs" />
+    <Compile Include="Controllers\AvaliacaoController.cs" />
     <Compile Include="Controllers\ParticipacaoController.cs" />
     <Compile Include="Data\Conventions\PrimaryKeyConvention.cs" />
     <Compile Include="Data\Conventions\NameConvention.cs" />
@@ -197,6 +198,8 @@
     <Compile Include="Models\Avaliacao.cs" />
     <Compile Include="Models\Curso.cs" />
     <Compile Include="Models\Disciplina.cs" />
+    <Compile Include="Models\DTO\AlunoDTO.cs" />
+    <Compile Include="Models\DTO\AvaliacaoDTO.cs" />
     <Compile Include="Models\DTO\ErrorDTO.cs" />
     <Compile Include="Models\DTO\GrupoEstudoDTO.cs" />
     <Compile Include="Models\Enums\TipoParticipacao.cs" />

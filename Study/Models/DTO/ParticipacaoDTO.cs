@@ -16,7 +16,11 @@ namespace Study.Models
         public virtual string NomeGrupo { get; set; }
         public virtual bool? Participando { get; set; }
         public virtual bool? Recebendo { get; set; }
-
+        public virtual long IdDisciplina { get; set; }
+        public virtual string NomeDisciplina { get; set; }
+        public virtual string FotoAluno { get; set; }
+        public virtual long AvaliacoesPositivas { get; set; }
+        public virtual long AvaliacoesNegativas { get; set; }
 
     }
 }

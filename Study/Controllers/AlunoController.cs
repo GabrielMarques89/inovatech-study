@@ -13,6 +13,7 @@ using System.Web.Helpers;
 using System.Drawing;
 using System.IO;
 using System.Web;
+using Study.Models.DTO;
 
 namespace Study.Controllers
 {
@@ -99,13 +100,31 @@ namespace Study.Controllers
                     .FirstOrDefault(x => x.Token.Equals(Request.Headers.Authorization.Scheme));
             }
 
+            AlunoDTO aluno = null;
+
             if (result != null)
             {
-                result.Token = "";
-                result.Foto = "";
+                aluno = new AlunoDTO
+                {
+                    Autenticado = result.Token.Equals(Request.Headers.Authorization.Scheme),
+                    AvaliacoesPositivas = result.Indicacoes,
+                    AvaliacoesNegativas = result.ContraIndicacoes,
+                    Avaliou = true,
+                    Email = result.Email,
+                    Foto = result.Foto,
+                    Id = result.Id,
+                    Matricula = result.Matricula,
+                    Nome = result.Nome,
+                    Telefone = result.Telefone,
+                    Version = result.Version
+                };
+            }else
+            {
+                AddError("Não foi possível encontrar o aluno.");
+                return SendErrorResponse(HttpStatusCode.BadRequest);
             }
 
-            return MultipleResponse(HttpStatusCode.OK, result);
+            return MultipleResponse(HttpStatusCode.OK, aluno);
         }
 
         [HttpGet]
@@ -268,7 +287,7 @@ namespace Study.Controllers
                 mail.Subject = "Esquecimento de Senha - ClickStudy";
                 mail.Body = "Favor acessar o aplicativo com a senha: senhapadrao123";
                 client.Send(mail);
-                return MultipleResponse(HttpStatusCode.OK, "Email enviado com sucesso!");
+                return MultipleResponse(HttpStatusCode.OK, null);
             }
             
             AddError("Não existe cadastro para o email informado");
@@ -308,8 +327,18 @@ namespace Study.Controllers
             {
                 grupos = grupos.Where(x => x.IdAluno == alunoLogado.Id);
             }
-
-            return MultipleResponse(HttpStatusCode.OK, grupos.ToList());
+            var repositorioParticipacao = new Repository<Participacao>(CurrentSession());
+            return MultipleResponse(HttpStatusCode.OK, grupos.Select(x => new GrupoEstudoDTO
+            {
+                Id = x.IdGrupo,
+                DataEncontro = new DateTimeOffset(x.DataEncontro),
+                Nome = x.NomeGrupo,
+                NomeDisciplina = x.NomeDisciplina,
+                IdDisciplina = x.IdDisciplina,
+                Participando = repositorioParticipacao.Queryable()
+                    .Count(y => y.Aluno.Id == (alunoLogado == null ? 0 : alunoLogado.Id)
+                        && y.Grupo.Id == x.IdGrupo) >0
+            }).ToList());
         }
 
 

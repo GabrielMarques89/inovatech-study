@@ -117,6 +117,7 @@ namespace Study.Controllers
                 query = query.Where(x => (x.Aluno.Id != aluno.Id && x.Grupo.Lider.Id == aluno.Id) 
                                             || (x.Aluno.Id == aluno.Id));
             }
+
             var result = query.ToList().Select(x => new ParticipacaoDTO
             {
                 IdParticipacao = x.Id,
@@ -126,7 +127,10 @@ namespace Study.Controllers
                 NomeGrupo = x.Grupo.Nome,
                 Participando = x.Participando,
                 Recebendo = aluno != null && x.Aluno.Id == aluno.Id,
-                Tipo = x.Tipo
+                Tipo = x.Tipo,
+                FotoAluno = x.Aluno.Foto,
+                IdDisciplina = x.Grupo.Disciplina.Id,
+                NomeDisciplina = x.Grupo.Disciplina.Nome
             });
 
             return MultipleResponse(HttpStatusCode.OK, result);
@@ -149,7 +153,7 @@ namespace Study.Controllers
                 return SendErrorResponse(HttpStatusCode.Unauthorized);
             }
 
-            return MultipleResponse(HttpStatusCode.OK, part);
+            return MultipleResponse(HttpStatusCode.OK, null);
         }
 
         [HttpPut]
@@ -169,7 +173,7 @@ namespace Study.Controllers
                 return SendErrorResponse(HttpStatusCode.Unauthorized);
             }
 
-            return MultipleResponse(HttpStatusCode.OK, part);
+            return MultipleResponse(HttpStatusCode.OK, null);
         }
 
         private Participacao ResponderSolicitacao(Participacao participacao, bool aprovar)
@@ -199,7 +203,7 @@ namespace Study.Controllers
 
         [HttpPut]
         [Route("cancelar")]
-        public HttpResponseMessage CancelarParticipacap([FromBody] Participacao participacao)
+        public HttpResponseMessage CancelarParticipacao([FromBody] Participacao participacao)
         {
             VerificaToken();
 
@@ -210,6 +214,7 @@ namespace Study.Controllers
 
             if (participacao != null)
             {
+                _repositorioParticipacao = new Repository<Participacao>(CurrentSession());
                 bool exists = _repositorioParticipacao.Queryable().Where(x => x.Id == participacao.Id).Count() > 0;
                 if (exists)
                 {

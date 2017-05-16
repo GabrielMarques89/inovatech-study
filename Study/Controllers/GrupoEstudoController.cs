@@ -95,6 +95,7 @@ namespace Study.Controllers
                 dto.IdLider = result.Lider.Id;
                 dto.NomeLider = result.Lider.Nome;
                 dto.FotoLider = result.Lider.Foto;
+                dto.Id = result.Id;
                 var logado = new Repository<Aluno>(CurrentSession()).Queryable().FirstOrDefault(x => x.Token == Request.Headers.Authorization.ToString());
                 if(logado != null)
                 {
@@ -121,10 +122,32 @@ namespace Study.Controllers
             }
 
             _repositorioViewAlunosGrupo = new Repository<ViewAlunosGrupo>(CurrentSession());
-            var result = _repositorioViewAlunosGrupo.Queryable()
-                .Where(x => x.IdGrupo == id).ToList();
+            _repositorioAluno = new Repository<Aluno>(CurrentSession());
+            var _repositorioAvaliacao = new Repository<Avaliacao>(CurrentSession());
+            var query = _repositorioViewAlunosGrupo.Queryable()
+                .Where(x => x.IdGrupo == id);
 
-            return MultipleResponse(HttpStatusCode.OK, result);
+            var alunoAutenticado = _repositorioAluno.Queryable()
+                .FirstOrDefault(x => x.Token == Request.Headers.Authorization.ToString());
+
+            var result = query.Select(x => new AlunoDTO
+            {
+                Email = x.Email == null ? "" : x.Email,
+                Foto = x.Foto == null ? "" : x.Foto,
+                Id = x.Id,
+                Matricula = x.Matricula,
+                Nome = x.Nome,
+                Telefone = x.Telefone == null ? "" : x.Telefone,
+                Version = x.Version,
+                Autenticado = alunoAutenticado == null ? false : alunoAutenticado.Id == x.Id,
+                Avaliou = alunoAutenticado == null ? false : _repositorioAvaliacao.Queryable()
+                    .Count(y => y.Avaliado.Id == x.Id
+                        && y.Avaliador.Id == alunoAutenticado.Id && y.Grupo.Id == id) > 0,
+                AvaliacoesNegativas = x.AvaliacoesNegativas,
+                AvaliacoesPositivas = x.AvaliacoesPositivas
+            });
+
+            return MultipleResponse(HttpStatusCode.OK, result.ToList());
         }
 
 
