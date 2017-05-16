@@ -13,6 +13,7 @@ using System.Web.Helpers;
 using System.Drawing;
 using System.IO;
 using System.Web;
+using Study.Models.DTO;
 
 namespace Study.Controllers
 {
@@ -308,8 +309,18 @@ namespace Study.Controllers
             {
                 grupos = grupos.Where(x => x.IdAluno == alunoLogado.Id);
             }
-
-            return MultipleResponse(HttpStatusCode.OK, grupos.ToList());
+            var repositorioParticipacao = new Repository<Participacao>(CurrentSession());
+            return MultipleResponse(HttpStatusCode.OK, grupos.Select(x => new GrupoEstudoDTO
+            {
+                Id = x.IdGrupo,
+                DataEncontro = new DateTimeOffset(x.DataEncontro),
+                Nome = x.NomeGrupo,
+                NomeDisciplina = x.NomeDisciplina,
+                IdDisciplina = x.IdDisciplina,
+                Participando = repositorioParticipacao.Queryable()
+                    .Count(y => y.Aluno.Id == (alunoLogado == null ? 0 : alunoLogado.Id)
+                        && y.Grupo.Id == x.IdGrupo) >0
+            }).ToList());
         }
 
 

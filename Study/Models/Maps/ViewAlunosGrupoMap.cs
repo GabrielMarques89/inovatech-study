@@ -24,6 +24,8 @@ namespace Study.Models.Maps
             Map(reg => reg.IdGrupo).Column("ID_GRUPO_ESTUDO");
             Map(reg => reg.NomeGrupo).Column("NOME_GRUPO");
             Map(reg => reg.Token).Column("TOKEN");
+            Map(reg => reg.AvaliacoesNegativas).Column("AVAL_NEGATIVAS");
+            Map(reg => reg.AvaliacoesPositivas).Column("AVAL_POSITIVAS");
             Map(reg => reg.Tipo).Column("TIPO").CustomType<EnumType<TipoParticipacao>>();
             
         }

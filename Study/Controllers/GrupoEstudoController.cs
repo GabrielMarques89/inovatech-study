@@ -95,6 +95,7 @@ namespace Study.Controllers
                 dto.IdLider = result.Lider.Id;
                 dto.NomeLider = result.Lider.Nome;
                 dto.FotoLider = result.Lider.Foto;
+                dto.Id = result.Id;
                 var logado = new Repository<Aluno>(CurrentSession()).Queryable().FirstOrDefault(x => x.Token == Request.Headers.Authorization.ToString());
                 if(logado != null)
                 {
