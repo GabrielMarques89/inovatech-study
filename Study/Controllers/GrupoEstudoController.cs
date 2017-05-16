@@ -50,7 +50,7 @@ namespace Study.Controllers
             var grupos = result.ToList().Select(x => new GrupoEstudoDTO
             {
                 Id = x.Id,
-                DataEncontro = x.DataEncontro,
+                DataEncontro = new DateTimeOffset(x.DataEncontro),
                 Descricao = x.Descricao,
                 IdDisciplina = x.Disciplina.Id,
                 IdLider = x.Lider.Id,
