@@ -239,7 +239,9 @@
     <Content Include="Scripts\3 - VIEW_ALUNOS_GRUPO.sql" />
     <Content Include="Scripts\4 - CARGA.sql" />
     <Content Include="Scripts\5 - VIEW_GRUPOS_ALUNO.sql" />
-    <Content Include="Web.config" />
+    <Content Include="Web.config">
+      <SubType>Designer</SubType>
+    </Content>
     <Content Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </Content>
