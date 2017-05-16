@@ -100,13 +100,31 @@ namespace Study.Controllers
                     .FirstOrDefault(x => x.Token.Equals(Request.Headers.Authorization.Scheme));
             }
 
+            AlunoDTO aluno = null;
+
             if (result != null)
             {
-                result.Token = "";
-                result.Foto = "";
+                aluno = new AlunoDTO
+                {
+                    Autenticado = result.Token.Equals(Request.Headers.Authorization.Scheme),
+                    AvaliacoesPositivas = result.Indicacoes,
+                    AvaliacoesNegativas = result.ContraIndicacoes,
+                    Avaliou = true,
+                    Email = result.Email,
+                    Foto = result.Foto,
+                    Id = result.Id,
+                    Matricula = result.Matricula,
+                    Nome = result.Nome,
+                    Telefone = result.Telefone,
+                    Version = result.Version
+                };
+            }else
+            {
+                AddError("Não foi possível encontrar o aluno.");
+                return SendErrorResponse(HttpStatusCode.BadRequest);
             }
 
-            return MultipleResponse(HttpStatusCode.OK, result);
+            return MultipleResponse(HttpStatusCode.OK, aluno);
         }
 
         [HttpGet]
