@@ -67,7 +67,7 @@ namespace Study.Controllers
 
         [HttpGet]
         [Route("detalhar/{id}")]
-        public HttpResponseMessage GetGrupo([FromUri]long? idGrupo)
+        public HttpResponseMessage GetGrupo([FromUri]long? id)
         {
             VerificaToken();
             if (Errors != null && HasError())
@@ -77,9 +77,9 @@ namespace Study.Controllers
 
             _repositorioGrupoEstudo = new Repository<GrupoEstudo>(CurrentSession());
             GrupoEstudo result = null;
-            if (idGrupo.HasValue)
+            if (id.HasValue)
             {
-                result = _repositorioGrupoEstudo.Queryable().FirstOrDefault(x => x.Id == idGrupo.Value);
+                result = _repositorioGrupoEstudo.Queryable().FirstOrDefault(x => x.Id == id.Value);
             }
             GrupoEstudoDTO dto = new GrupoEstudoDTO();
             if (result != null)
@@ -95,11 +95,11 @@ namespace Study.Controllers
                 dto.IdLider = result.Lider.Id;
                 dto.NomeLider = result.Lider.Nome;
                 dto.FotoLider = result.Lider.Foto;
-                var logado = _repositorioAluno.Queryable().FirstOrDefault(x => x.Token == Request.Headers.Authorization.ToString());
+                var logado = new Repository<Aluno>(CurrentSession()).Queryable().FirstOrDefault(x => x.Token == Request.Headers.Authorization.ToString());
                 if(logado != null)
                 {
                     dto.IsLider = logado.Id == result.Lider.Id;
-                    var existe = _repositorioParticipacao.Queryable().Count(x => x.Aluno.Id == logado.Id && x.Grupo.Id == result.Id);
+                    var existe = new Repository<Participacao>(CurrentSession()).Queryable().Count(x => x.Aluno.Id == logado.Id && x.Grupo.Id == result.Id);
                     dto.Participando = existe > 0;
                 }else
                 {
@@ -147,13 +147,26 @@ namespace Study.Controllers
             {
                 return SendErrorResponse(HttpStatusCode.BadRequest);
             }
-            grupo.Disciplina = _repositorioDisciplina.FindById(1);
-            grupo.Lider = _repositorioAluno.FindById(1);
+            grupo.Disciplina = _repositorioDisciplina.FindById(grupo.Disciplina.Id);
+            var alunoLogado = _repositorioAluno.Queryable()
+                .FirstOrDefault(x => x.Token == Request.Headers.Authorization.ToString());
+            grupo.Lider = alunoLogado;
 
             try
             {
                 _repositorioGrupoEstudo.Save(grupo);
                 _repositorioGrupoEstudo.Flush();
+                var participacao = new Participacao
+                {
+                    Tipo = TipoParticipacao.Lider,
+                    Aluno = grupo.Lider,
+                    Grupo = grupo,
+                    Participando = true,
+                    Version = 0
+                };
+                _repositorioParticipacao = new Repository<Participacao>(CurrentSession());
+                _repositorioParticipacao.Save(participacao);
+                _repositorioParticipacao.Flush();
                 grupo.Disciplina = null;
                 grupo.Lider = null;
                 return MultipleResponse(HttpStatusCode.OK, grupo);
